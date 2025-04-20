@@ -3,7 +3,7 @@ import random
 import time
 import pandas as pd
 
-# 1. 세션 상태 초기화는 가장 먼저 처리
+# 세션 상태 초기화
 if 'current' not in st.session_state:
     st.session_state.current = 0
 if 'results' not in st.session_state:
@@ -18,39 +18,45 @@ if 'start_time' not in st.session_state:
     st.session_state.start_time = None
 if 'shape' not in st.session_state:
     st.session_state.shape = None
+if 'wait_flag' not in st.session_state:
+    st.session_state.wait_flag = False
 
-# 2. 설정
+# 설정
 shapes = ['원', '세모', '네모']
 total_trials = 10
 interval = 2
 
-# 3. 페이지 UI 설정
+# UI 설정
 st.set_page_config(page_title="시각 단순 선택주의력 검사", layout="centered")
 st.title("시각 단순 선택주의력 검사")
 st.write("도형이 화면에 나타납니다. **'원'이 보이면 s 키를 입력하고 엔터!**")
 
-# 4. 검사 시작
+# 검사 시작
 if st.session_state.current == 0:
     if st.button("검사 시작"):
         st.session_state.current = 1
         st.rerun()
 
-# 5. 검사 진행
+# 검사 진행
 elif st.session_state.current <= total_trials:
     placeholder = st.empty()
 
-    if st.session_state.start_time is None:
+    if not st.session_state.wait_flag:
+        # 도형 선택 및 출력
         st.session_state.shape = random.choice(shapes)
+        st.session_state.start_time = time.time()
         placeholder.markdown(
             f"<h1 style='text-align: center;'>{st.session_state.shape}</h1>",
             unsafe_allow_html=True
         )
-        st.session_state.start_time = time.time()
+        st.session_state.wait_flag = True
+        time.sleep(interval)
         st.rerun()
 
     else:
+        # 사용자 반응 입력
         response = st.text_input(
-            "※ 's'를 입력하고 Enter 키를 누르세요 (2초 안에)", key=f"input_{st.session_state.current}"
+            "※ 's'를 입력하고 Enter 키를 누르세요 (도형을 보고 반응)", key=f"input_{st.session_state.current}"
         )
 
         if response:
@@ -72,11 +78,13 @@ elif st.session_state.current <= total_trials:
                 else:
                     st.session_state.results.append((shape, '정상'))
 
+            # 다음 trial로
             st.session_state.current += 1
             st.session_state.start_time = None
+            st.session_state.wait_flag = False
             st.rerun()
 
-# 6. 결과 출력
+# 결과 출력
 else:
     st.subheader("검사 결과")
     if st.session_state.reaction_times:
