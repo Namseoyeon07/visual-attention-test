@@ -3,54 +3,55 @@ import random
 import time
 import pandas as pd
 
-# 페이지 설정
+# 1. 세션 상태 초기화는 가장 먼저 처리
+if 'current' not in st.session_state:
+    st.session_state.current = 0
+if 'results' not in st.session_state:
+    st.session_state.results = []
+if 'reaction_times' not in st.session_state:
+    st.session_state.reaction_times = []
+if 'omission' not in st.session_state:
+    st.session_state.omission = 0
+if 'commission' not in st.session_state:
+    st.session_state.commission = 0
+if 'start_time' not in st.session_state:
+    st.session_state.start_time = None
+if 'shape' not in st.session_state:
+    st.session_state.shape = None
+
+# 2. 설정
+shapes = ['원', '세모', '네모']
+total_trials = 10
+interval = 2
+
+# 3. 페이지 UI 설정
 st.set_page_config(page_title="시각 단순 선택주의력 검사", layout="centered")
+st.title("시각 단순 선택주의력 검사")
+st.write("도형이 화면에 나타납니다. **'원'이 보이면 s 키를 입력하고 엔터!**")
 
-# 세션 상태 초기화 함수
-def initialize_session():
-    if 'current' not in st.session_state:
-        st.session_state.current = 0
-    if 'results' not in st.session_state:
-        st.session_state.results = []
-    if 'reaction_times' not in st.session_state:
-        st.session_state.reaction_times = []
-    if 'omission' not in st.session_state:
-        st.session_state.omission = 0
-    if 'commission' not in st.session_state:
-        st.session_state.commission = 0
-    if 'start_time' not in st.session_state:
-        st.session_state.start_time = None
-    if 'shape' not in st.session_state:
-        st.session_state.shape = None
+# 4. 검사 시작
+if st.session_state.current == 0:
+    if st.button("검사 시작"):
+        st.session_state.current = 1
+        st.experimental_rerun()
 
-# 메인 함수
-def main():
-    initialize_session()
+# 5. 검사 진행
+elif st.session_state.current <= total_trials:
+    placeholder = st.empty()
 
-    shapes = ['원', '세모', '네모']
-    total_trials = 10
-    interval = 2
+    if st.session_state.start_time is None:
+        st.session_state.shape = random.choice(shapes)
+        placeholder.markdown(
+            f"<h1 style='text-align: center;'>{st.session_state.shape}</h1>",
+            unsafe_allow_html=True
+        )
+        st.session_state.start_time = time.time()
+        st.experimental_rerun()
 
-    st.title("시각 단순 선택주의력 검사")
-    st.write("도형이 화면에 나타납니다. **'원'이 보이면 S 키를 입력하고 엔터!**")
-
-    # 검사 시작
-    if st.session_state.current == 0:
-        if st.button("검사 시작"):
-            st.session_state.current = 1
-            st.rerun()
-            st.stop()
-
-    # 검사 진행
-    elif st.session_state.current <= total_trials:
-        placeholder = st.empty()
-
-        if st.session_state.start_time is None:
-            st.session_state.shape = random.choice(shapes)
-            placeholder.markdown(f"<h1 style='text-align: center;'>{st.session_state.shape}</h1>", unsafe_allow_html=True)
-            st.session_state.start_time = time.time()
-
-        response = st.text_input("※ 's'를 입력하고 Enter 키를 누르세요 (2초 안에)", key=f"input_{st.session_state.current}")
+    else:
+        response = st.text_input(
+            "※ 's'를 입력하고 Enter 키를 누르세요 (2초 안에)", key=f"input_{st.session_state.current}"
+        )
 
         if response:
             rt = time.time() - st.session_state.start_time
@@ -73,29 +74,24 @@ def main():
 
             st.session_state.current += 1
             st.session_state.start_time = None
-            st.rerun()
+            st.experimental_rerun()
 
-    # 검사 종료 후 결과 출력
+# 6. 결과 출력
+else:
+    st.subheader("검사 결과")
+    if st.session_state.reaction_times:
+        avg_rt = sum(st.session_state.reaction_times) / len(st.session_state.reaction_times)
+        st.write(f"평균 반응 시간: {avg_rt:.2f}초")
     else:
-        st.subheader("검사 결과")
+        st.write("정확한 반응이 없습니다.")
 
-        if st.session_state.reaction_times:
-            avg_rt = sum(st.session_state.reaction_times) / len(st.session_state.reaction_times)
-            st.write(f"평균 반응 시간: {avg_rt:.2f}초")
-        else:
-            st.write("정확한 반응이 없습니다.")
+    st.write(f"Omission 오류 수: {st.session_state.omission}")
+    st.write(f"Commission 오류 수: {st.session_state.commission}")
 
-        st.write(f"Omission 오류 수: {st.session_state.omission}")
-        st.write(f"Commission 오류 수: {st.session_state.commission}")
+    df = pd.DataFrame(st.session_state.results, columns=["자극 도형", "응답 결과"])
+    st.dataframe(df)
 
-        df = pd.DataFrame(st.session_state.results, columns=["자극 도형", "응답 결과"])
-        st.dataframe(df)
-
-        if st.button("다시 검사하기"):
-            for key in list(st.session_state.keys()):
-                del st.session_state[key]
-            st.rerun()
-
-# 실행
-if __name__ == "__main__":
-    main()
+    if st.button("다시 검사하기"):
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.experimental_rerun()
