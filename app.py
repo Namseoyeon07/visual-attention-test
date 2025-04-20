@@ -28,7 +28,7 @@ if start:
     st.session_state.omission = 0
     st.session_state.commission = 0
     st.session_state.results = []
-    st.experimental_rerun()
+    st.rerun()
 
 if st.session_state.current < stimuli_count and start is False:
     st.write("검사를 시작하려면 위 버튼을 누르세요.")
@@ -59,7 +59,7 @@ elif st.session_state.current < stimuli_count:
 
     time.sleep(interval)
     st.session_state.current += 1
-    st._rerun()
+    st.rerun()
 
 elif st.session_state.current >= stimuli_count:
     placeholder.markdown("### 검사 종료!")
