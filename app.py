@@ -33,7 +33,7 @@ st.write("도형이 화면에 나타납니다. **'원'이 보이면 s 키를 입
 if st.session_state.current == 0:
     if st.button("검사 시작"):
         st.session_state.current = 1
-        st.experimental_rerun()
+        st.rerun()
 
 # 5. 검사 진행
 elif st.session_state.current <= total_trials:
@@ -46,7 +46,7 @@ elif st.session_state.current <= total_trials:
             unsafe_allow_html=True
         )
         st.session_state.start_time = time.time()
-        st.experimental_rerun()
+        st.rerun()
 
     else:
         response = st.text_input(
@@ -74,7 +74,7 @@ elif st.session_state.current <= total_trials:
 
             st.session_state.current += 1
             st.session_state.start_time = None
-            st.experimental_rerun()
+            st.rerun()
 
 # 6. 결과 출력
 else:
@@ -94,4 +94,4 @@ else:
     if st.button("다시 검사하기"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
-        st.experimental_rerun()
+        st.rerun()
