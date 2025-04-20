@@ -59,7 +59,7 @@ elif st.session_state.current < stimuli_count:
 
     time.sleep(interval)
     st.session_state.current += 1
-    st.experimental_rerun()
+    st._rerun()
 
 elif st.session_state.current >= stimuli_count:
     placeholder.markdown("### 검사 종료!")
