@@ -4,19 +4,14 @@ import time
 
 st.set_page_config(page_title="시각 단순 선택주의력 검사", layout="centered")
 
+# 무조건 세션 상태 초기화
+for key in ['current', 'results', 'reaction_times', 'omission', 'commission', 'start_time', 'shape']:
+    if key not in st.session_state:
+        st.session_state[key] = 0 if key in ['current', 'omission', 'commission'] else [] if 'results' in key or 'reaction' in key else None
+
 shapes = ['원', '세모', '네모']
 total_trials = 10
-interval = 2  # 자극 시간 제한 (초)
-
-# 세션 상태 초기화
-if 'current' not in st.session_state:
-    st.session_state.current = 0
-    st.session_state.results = []
-    st.session_state.reaction_times = []
-    st.session_state.omission = 0
-    st.session_state.commission = 0
-    st.session_state.start_time = None
-    st.session_state.shape = None
+interval = 2
 
 st.title("시각 단순 선택주의력 검사")
 st.write("도형이 화면에 나타납니다. **'원'이 보이면 S 키를 입력하고 엔터!**")
@@ -36,7 +31,7 @@ elif st.session_state.current <= total_trials:
         placeholder.markdown(f"<h1 style='text-align: center;'>{st.session_state.shape}</h1>", unsafe_allow_html=True)
         st.session_state.start_time = time.time()
 
-    response = st.text_input("※ 's'를 입력하고 Enter 키를 누르세요 (2초 안에)", key=st.session_state.current)
+    response = st.text_input("※ 's'를 입력하고 Enter 키를 누르세요 (2초 안에)", key=f"input_{st.session_state.current}")
 
     if response:
         rt = time.time() - st.session_state.start_time
@@ -73,12 +68,10 @@ else:
     st.write(f"Omission 오류 수: {st.session_state.omission}")
     st.write(f"Commission 오류 수: {st.session_state.commission}")
 
-    # 결과 테이블 출력
     import pandas as pd
     df = pd.DataFrame(st.session_state.results, columns=["자극 도형", "응답 결과"])
     st.dataframe(df)
 
-    # 재시작 옵션
     if st.button("다시 검사하기"):
         for key in list(st.session_state.keys()):
             del st.session_state[key]
