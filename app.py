@@ -24,6 +24,7 @@ if 'commission' not in st.session_state:
 shapes = ['원', '세모', '네모']
 total_trials = 10
 
+st.set_page_config(page_title="주의력 검사", layout="centered")
 st.title("시각 단순 선택주의력 검사")
 st.write("도형이 나타납니다. '원'이 보이면 s 키를 입력하고 엔터를 눌러주세요!")
 
@@ -38,7 +39,7 @@ elif st.session_state.step == 'show_shape':
     st.session_state.shape = random.choice(shapes)
     st.session_state.start_time = time.time()
     st.markdown(f"<h1 style='text-align: center;'>{st.session_state.shape}</h1>", unsafe_allow_html=True)
-    if st.button("다음"):  # 클릭으로 입력단계로 넘어감
+    if st.button("다음"):
         st.session_state.step = 'get_input'
         st.rerun()
 
@@ -74,7 +75,7 @@ elif st.session_state.step == 'get_input':
             st.session_state.step = 'show_shape'
         st.rerun()
 
-# 단계: 결과 출력
+# 결과 출력
 elif st.session_state.step == 'done':
     st.subheader("검사 결과")
     if st.session_state.reaction_times:
